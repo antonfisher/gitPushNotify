@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__author__ = "Anton Fischer"
+__author__ = "Anton Fischer <a.fschr@gmail.com>"
 __date__ = "$30.08.2011 23:33:33$"
 
 import sys, time, os
