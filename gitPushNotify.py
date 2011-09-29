@@ -89,7 +89,7 @@ class GitPushNotify:
         sourceOutput = commands.getoutput(
             'cd ' + repositoryPath + ' &&'\
             + 'git fetch' + ' &&'\
-            + 'git whatchanged -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
+            + 'git whatchanged origin/master -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
         )
         parser = gitParser.GitParser(sourceOutput)
         listChanges = parser.getChangesList()
@@ -98,7 +98,7 @@ class GitPushNotify:
 
         for item in listChanges:
             commitTime = datetime.fromtimestamp(int(item['time']))
-            if (commitTime >= lastCheckTime):
+            if (commitTime >= lastCheckTime or True):
                 message += '...\n' + commitTime.strftime('%x %X') + '\n' + item['author'] + ' &lt;' + item['email']\
                            + '&gt;\n' + item['message'] + '\n'
                 countCommits += 1
