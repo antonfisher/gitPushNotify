@@ -98,7 +98,7 @@ class GitPushNotify:
 
         for item in listChanges:
             commitTime = datetime.fromtimestamp(int(item['time']))
-            if (commitTime >= lastCheckTime or True):
+            if (commitTime >= lastCheckTime):
                 message += '...\n' + commitTime.strftime('%x %X') + '\n' + item['author'] + ' &lt;' + item['email']\
                            + '&gt;\n' + item['message'] + '\n'
                 countCommits += 1
