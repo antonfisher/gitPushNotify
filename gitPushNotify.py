@@ -4,7 +4,7 @@
 __author__ = 'Anton Fischer <a.fschr@gmail.com>'
 __date__ = '$30.08.2011 23:33:33$'
 
-import commands, os, pynotify
+import commands, os, pynotify, logging, tempfile
 from datetime import datetime
 import gitParser
 
@@ -22,12 +22,20 @@ class GitPushNotify:
             self.repositoryPath = repositoryPath
         else:
             self.repositoryPath = '/home/lenin/python/git-push-notify'
+        # log init
+        logging.basicConfig(filename = tempfile.gettempdir() + '/gitPushNotify.log',
+                            level = logging.DEBUG,
+                            format = '%(asctime)s %(levelname)s: %(message)s',
+                            datefmt = '%Y-%m-%d %I:%M:%S')
+        logging.info('Daemon start')
+        # start notify
         self.fireNotify('I am run!')
 
     def fireNotify(self, msg = '', title = 'GitPushNotify', notifyType = NOTIFY_TYPE_INFO):
         """
         Fire notify action
         """
+        logging.info('Called fireNotify()')
         if (self.useNotifySend):
             level = 'normal'
             icon = self.getSystemIcon()
@@ -80,6 +88,7 @@ class GitPushNotify:
         """
         Get git log as string
         """
+        logging.info('Called check()')
         if (not lastCheckTime):
             lastCheckTime = self.getLastCheckTime()
 
@@ -91,11 +100,13 @@ class GitPushNotify:
             + 'git fetch' + ' &&'\
             + 'git whatchanged origin/master -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
         )
+        logging.debug('sourceOutput: %s', sourceOutput)
         parser = gitParser.GitParser(sourceOutput)
         listChanges = parser.getChangesList()
         message = ''
         countCommits = 0
 
+        logging.info('Count commits: %s', len(listChanges))
         for item in listChanges:
             commitTime = datetime.fromtimestamp(int(item['time']))
             if (commitTime >= lastCheckTime):
@@ -104,13 +115,14 @@ class GitPushNotify:
                 countCommits += 1
 
         if (countCommits > 0):
+            logging.info('Count new commits: %s', countCommits)
             message += '...\n%s new commit(s)\n\n' % countCommits
 
             self.fireNotify(message)
             self.setLastCheckTime()
 
-        if (len(message) > 0):
-            return self
+        logging.info('End check()')
+        return self
 
 if __name__ == '__main__':
     c = GitPushNotify()

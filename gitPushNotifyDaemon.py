@@ -4,7 +4,7 @@
 __author__ = 'Anton Fischer <a.fschr@gmail.com>'
 __date__ = '$30.08.2011 23:33:33$'
 
-import sys, time, os
+import sys, time, tempfile
 import gitPushNotify
 from daemon import Daemon
  
@@ -16,7 +16,7 @@ class GitPushNotifyDaemon(Daemon):
             time.sleep(60)
 
 if __name__ == '__main__':
-    daemon = GitPushNotifyDaemon('/tmp/daemon-git-push-notify.pid')
+    daemon = GitPushNotifyDaemon(tempfile.gettempdir() + '/daemonGitPushNotify.pid')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             print 'Daemon started!'
