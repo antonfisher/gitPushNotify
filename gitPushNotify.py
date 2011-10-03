@@ -4,30 +4,49 @@
 __author__ = 'Anton Fischer <a.fschr@gmail.com>'
 __date__ = '$30.08.2011 23:33:33$'
 
-import commands, os, pynotify, logging, tempfile
+import commands, os, pynotify, logging, tempfile, ConfigParser
 from datetime import datetime
 import gitParser
 
 class GitPushNotify:
-    useNotifySend = True
-    useSound = False
-    repositoryPath = '';
+    useNotifySend       = True
+    useSound            = False
+    repositoryPath      = None
+    repositoryBranch    = 'origin/master'
+    daemonTimeout       = 60
 
     NOTIFY_TYPE_INFO       = 'info'
     NOTIFY_TYPE_WARNING    = 'warning'
     NOTIFY_TYPE_ERROR      = 'error'
 
-    def __init__(self, repositoryPath = None):
-        if (repositoryPath):
-            self.repositoryPath = repositoryPath
-        else:
-            self.repositoryPath = '/home/lenin/python/git-push-notify'
+    def __init__(self):
         # log init
         logging.basicConfig(filename = tempfile.gettempdir() + '/gitPushNotify.log',
                             level = logging.DEBUG,
                             format = '%(asctime)s %(levelname)s: %(message)s',
                             datefmt = '%Y-%m-%d %I:%M:%S')
         logging.info('Daemon start')
+
+        # read config
+        config = ConfigParser.ConfigParser()
+        config.read(os.path.dirname(__file__) + '/config.cfg')
+
+        # -- repository path
+        if config.has_option('git', 'repository'):
+            self.repositoryPath = config.get('git', 'repository')
+        else:
+            self.fireNotify('Is not define repository path in config.cfg. Daemon stopped.')
+            logging.error('Is not define repository path in config.cfg. Daemon stopped.')
+            exit()
+
+        # -- repository branch
+        if config.has_option('git', 'branch'):
+            self.repositoryBranch = config.get('git', 'branch')
+
+        # -- daemon timeout
+        if config.has_option('daemon', 'timeout'):
+            self.daemonTimeout = config.getint('daemon', 'timeout')
+
         # start notify
         self.fireNotify('I am run!')
 
@@ -97,8 +116,8 @@ class GitPushNotify:
 
         sourceOutput = commands.getoutput(
             'cd ' + repositoryPath + ' &&'\
-            + 'git fetch' + ' &&'\
-            + 'git whatchanged origin/master -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
+            + ' git fetch' + ' &&'\
+            + ' git whatchanged origin/master -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
         )
         logging.debug('sourceOutput: %s', sourceOutput)
         parser = gitParser.GitParser(sourceOutput)
