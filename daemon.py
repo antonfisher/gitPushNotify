@@ -108,13 +108,15 @@ class Daemon:
                 os.kill(pid, SIGTERM)
                 time.sleep(0.1)
         except OSError, err:
-            err = str(err)
-            if err.find("No such process") > 0:
+            #FIX for Ru_ru locale
+            # Anton Fischer <a.fschr@gmail.com>
+            #err = str(err)
+            #if err.find("No such process") > 0:
                 if os.path.exists(self.pidfile):
                     os.remove(self.pidfile)
-            else:
-                print str(err)
-                sys.exit(1)
+            #else:
+            #    print str(err)
+            #    sys.exit(1)
 
     def restart(self):
         """

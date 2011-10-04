@@ -4,20 +4,16 @@
 __author__ = 'Anton Fischer <a.fschr@gmail.com>'
 __date__ = '$30.08.2011 23:33:33$'
 
-import commands, os, pynotify, logging, tempfile, ConfigParser
+import commands, os, pynotify, logging, tempfile, ConfigParser, sys
 from datetime import datetime
 import gitParser
 
 class GitPushNotify:
     useNotifySend       = True
-    useSound            = False
+    useNotifySound      = False #no yet
     repositoryPath      = None
     repositoryBranch    = 'origin/master'
-    daemonTimeout       = 60
-
-    NOTIFY_TYPE_INFO       = 'info'
-    NOTIFY_TYPE_WARNING    = 'warning'
-    NOTIFY_TYPE_ERROR      = 'error'
+    daemonTimeout       = 60 #sec
 
     def __init__(self):
         # log init
@@ -29,15 +25,21 @@ class GitPushNotify:
 
         # read config
         config = ConfigParser.ConfigParser()
-        config.read(os.path.dirname(__file__) + '/config.cfg')
+        configPath = os.path.dirname(__file__) + '/config.cfg'
+        if os.path.exists(configPath):
+            config.read(configPath)
+        else:
+            self.fireNotify('File "config.cfg" does not exist. Daemon stopped.')
+            sys.exit(2)
 
         # -- repository path
         if config.has_option('git', 'repository'):
             self.repositoryPath = config.get('git', 'repository')
         else:
-            self.fireNotify('Is not define repository path in config.cfg. Daemon stopped.')
-            logging.error('Is not define repository path in config.cfg. Daemon stopped.')
-            exit()
+            message = 'Is not define repository path in "config.cfg". Daemon stopped.'
+            self.fireNotify(message)
+            logging.error(message)
+            sys.exit(2)
 
         # -- repository branch
         if config.has_option('git', 'branch'):
@@ -47,27 +49,32 @@ class GitPushNotify:
         if config.has_option('daemon', 'timeout'):
             self.daemonTimeout = config.getint('daemon', 'timeout')
 
+        # -- use notify-send
+        if config.has_option('notify', 'useNotifySend'):
+            self.useNotifySend = config.getboolean('notify', 'useNotifySend')
+
+        # -- use notify-sound
+        if config.has_option('notify', 'useNotifySound'):
+            self.useNotifySound = config.getboolean('notify', 'useNotifySound')
+
         # start notify
         self.fireNotify('I am run!')
 
-    def fireNotify(self, msg = '', title = 'GitPushNotify', notifyType = NOTIFY_TYPE_INFO):
+    def fireNotify(self, msg = '', title = 'GitPushNotify'):
         """
         Fire notify action
         """
         logging.info('Called fireNotify()')
         if (self.useNotifySend):
-            level = 'normal'
-            icon = self.getSystemIcon()
             #commands.getstatusoutput('notify-send -u "%s" -i "%s" "%s" "%s"' % (level, icon, title, msg))
             if pynotify.init('icon-summary-body'):
-                n = pynotify.Notification(title, msg, icon).show()
+                pynotify.Notification(title, msg, self.getSystemIcon()).show()
             else:
                 print 'Notify not supported. You need to install python-notify package first.'
 
-        if (self.useSound):
+        if (self.useNotifySound):
             # play sound
             pass
-        return self
 
     def getSystemIcon(self):
         """
@@ -96,12 +103,11 @@ class GitPushNotify:
         """
         return self.repositoryPath
 
-    def setRepositoryPath(self, path):
+    def getDaemonTimeout(self):
         """
-        Set repository path
+        Get daemon checking timeout
         """
-        self.repositoryPath = path
-        return self
+        return self.daemonTimeout
 
     def check(self, lastCheckTime = None, repositoryPath = None):
         """
