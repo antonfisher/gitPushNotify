@@ -123,7 +123,7 @@ class GitPushNotify:
         sourceOutput = commands.getoutput(
             'cd ' + repositoryPath + ' &&'\
             + ' git fetch' + ' &&'\
-            + ' git whatchanged origin/master -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
+            + ' git whatchanged ' + self.repositoryBranch + ' -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
         )
         logging.debug('sourceOutput: %s', sourceOutput)
         parser = gitParser.GitParser(sourceOutput)
