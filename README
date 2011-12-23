@@ -1,3 +1,6 @@
 Try to create python daemon...
 
 Class Daemon: http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
+
+$vim /etc/rc.local
+python /home/fisher/python/bin/gitPushNotify/gitPushNotifyDaemon.py start >> /tmp/gitPushNotifyDaemon.log 2>&1
