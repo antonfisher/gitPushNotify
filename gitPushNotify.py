@@ -4,7 +4,7 @@
 __author__ = 'Anton Fischer <a.fschr@gmail.com>'
 __date__ = '$30.08.2011 23:33:33$'
 
-import commands, os, pynotify, logging, tempfile, ConfigParser, sys
+import subprocess, os, pynotify, logging, tempfile, ConfigParser, sys
 from datetime import datetime
 import gitParser
 
@@ -94,7 +94,9 @@ class GitPushNotify:
         """
         Set time of last checking -> touch file
         """
-        commands.getoutput('touch ' + __file__)
+        #commands.getoutput('touch ' + __file__)
+        #os.system('touch ' + __file__)
+        subprocess.check_output('touch ' + __file__, shell=True)
         return self
 
     def getRepositoryPath(self):
@@ -121,10 +123,12 @@ class GitPushNotify:
             repositoryPath = self.getRepositoryPath()
 
         #sourceOutput = commands.getoutput(
-        sourceOutput = subprocesses.check_output(
+        #sourceOutput = os.system(
+        sourceOutput = subprocess.check_output(
             'cd ' + repositoryPath + ' &&'\
             + ' git fetch' + ' &&'\
-            + ' git whatchanged ' + self.repositoryBranch + ' -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
+            + ' git whatchanged ' + self.repositoryBranch + ' -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"',
+            shell=True
         )
         logging.debug('sourceOutput: %s', sourceOutput)
         parser = gitParser.GitParser(sourceOutput)
