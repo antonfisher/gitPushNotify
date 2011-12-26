@@ -58,7 +58,7 @@ class GitPushNotify:
             self.useNotifySound = config.getboolean('notify', 'useNotifySound')
 
         # start notify
-        self.fireNotify('I am run!')
+        self.fireNotify('Start!')
 
     def fireNotify(self, msg = '', title = 'GitPushNotify'):
         """
@@ -120,7 +120,8 @@ class GitPushNotify:
         if (not repositoryPath):
             repositoryPath = self.getRepositoryPath()
 
-        sourceOutput = commands.getoutput(
+        #sourceOutput = commands.getoutput(
+        sourceOutput = subprocesses.check_output(
             'cd ' + repositoryPath + ' &&'\
             + ' git fetch' + ' &&'\
             + ' git whatchanged ' + self.repositoryBranch + ' -10 --date=raw --date-order --pretty=format:"%H %n%cn %n%ce %n%ct %n%s"'
